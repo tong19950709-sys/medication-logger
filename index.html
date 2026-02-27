@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="用药记录">
+    <meta name="apple-mobile-web-app-title" content="症状记录">
     <link rel="apple-touch-icon" href="icon-192.png">
     <link rel="manifest" href="manifest.json">
-    <title>哮喘用药记录</title>
+    <title>症状用药记录</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -39,68 +39,391 @@
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .record-page { text-align: center; padding-top: 60px; }
-        .app-icon { font-size: 80px; margin-bottom: 20px; }
-        .app-title { font-size: 32px; font-weight: bold; margin-bottom: 10px; }
-        .app-subtitle { color: #86868b; margin-bottom: 60px; }
-        .record-button {
+        .record-page { text-align: center; padding-top: 40px; }
+        .app-icon { 
+            font-size: 100px; 
+            margin-bottom: 20px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        .app-title { 
+            font-size: 36px; 
+            font-weight: bold; 
+            margin-bottom: 10px;
             background: linear-gradient(135deg, #007AFF 0%, #0051D5 100%);
-            color: white; border: none; border-radius: 15px;
-            padding: 20px 40px; font-size: 20px; font-weight: 600;
-            cursor: pointer; box-shadow: 0 10px 30px rgba(0, 122, 255, 0.3);
-            transition: all 0.3s; display: inline-flex;
-            align-items: center; gap: 10px; margin-bottom: 60px;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
-        .record-button:active { transform: scale(0.95); }
-        .record-button:disabled { background: #ccc; cursor: not-allowed; }
-        .features { text-align: left; max-width: 300px; margin: 0 auto; }
+        .app-subtitle { 
+            color: #86868b; 
+            margin-bottom: 40px;
+            font-size: 16px;
+        }
+        .symptom-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+        .symptom-btn {
+            background: white;
+            border: 3px solid #e5e5e7;
+            border-radius: 20px;
+            padding: 20px 30px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            min-width: 140px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+        .symptom-btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        }
+        .symptom-btn:active {
+            transform: translateY(-2px);
+        }
+        .symptom-btn.asthma {
+            border-color: #007AFF;
+            color: #007AFF;
+        }
+        .symptom-btn.asthma:hover {
+            background: linear-gradient(135deg, #007AFF 0%, #0051D5 100%);
+            color: white;
+            border-color: #007AFF;
+        }
+        .symptom-btn.headache {
+            border-color: #FF3B30;
+            color: #FF3B30;
+        }
+        .symptom-btn.headache:hover {
+            background: linear-gradient(135deg, #FF3B30 0%, #FF453A 100%);
+            color: white;
+            border-color: #FF3B30;
+        }
+        .symptom-icon {
+            font-size: 48px;
+        }
+        .symptom-label {
+            font-size: 16px;
+        }
+        .features { 
+            text-align: left; 
+            max-width: 340px; 
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
         .feature-item {
-            display: flex; align-items: center; gap: 10px;
-            margin-bottom: 15px; color: #86868b; font-size: 14px;
+            display: flex; 
+            align-items: center; 
+            gap: 12px;
+            margin-bottom: 16px; 
+            color: #1d1d1f; 
+            font-size: 15px;
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.2s;
         }
-        .feature-icon { font-size: 20px; }
-        .list-header { font-size: 28px; font-weight: bold; margin-bottom: 20px; }
-        .empty-state { text-align: center; padding: 60px 20px; color: #86868b; }
-        .empty-icon { font-size: 60px; margin-bottom: 20px; }
-        .record-group { margin-bottom: 30px; }
-        .group-header {
-            font-size: 18px; font-weight: 600; color: #86868b;
-            margin-bottom: 10px; padding: 0 10px;
+        .feature-item:last-child {
+            margin-bottom: 0;
         }
-        .record-item {
-            background: white; border-radius: 12px; padding: 16px;
-            margin-bottom: 10px; display: flex; align-items: center;
-            gap: 15px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        .feature-item:hover {
+            background: #f5f5f7;
+            transform: translateX(4px);
         }
-        .record-icon {
-            width: 40px; height: 40px; background: #E3F2FD;
-            border-radius: 50%; display: flex; align-items: center;
-            justify-content: center; font-size: 20px;
+        .feature-icon { 
+            font-size: 24px;
+            min-width: 24px;
         }
-        .record-info { flex: 1; }
-        .record-date { font-weight: 600; margin-bottom: 4px; }
-        .record-time { color: #86868b; font-size: 14px; }
-        .delete-btn {
-            background: #FF3B30; color: white; border: none;
-            border-radius: 8px; padding: 8px 16px;
-            font-size: 14px; cursor: pointer;
+        .list-header { 
+            font-size: 32px; 
+            font-weight: bold; 
+            margin-bottom: 24px;
+            background: linear-gradient(135deg, #007AFF 0%, #0051D5 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
-        .stat-cards {
-            display: grid; grid-template-columns: repeat(3, 1fr);
-            gap: 10px; margin-bottom: 30px;
+        .filter-tabs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            background: white;
+            padding: 12px;
+            border-radius: 16px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
         }
-        .stat-card {
-            background: white; border-radius: 12px; padding: 20px;
-            text-align: center; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        .filter-tab {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 12px;
+            background: #f5f5f7;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
         }
-        .stat-icon { font-size: 24px; margin-bottom: 10px; }
-        .stat-value { font-size: 28px; font-weight: bold; margin-bottom: 5px; }
-        .stat-label { color: #86868b; font-size: 12px; }
-        .chart-container {
-            background: white; border-radius: 12px; padding: 20px;
+        .filter-tab.active {
+            background: linear-gradient(135deg, #007AFF 0%, #0051D5 100%);
+            color: white;
+        }
+        .filter-tab.asthma.active {
+            background: linear-gradient(135deg, #007AFF 0%, #0051D5 100%);
+        }
+        .filter-tab.headache.active {
+            background: linear-gradient(135deg, #FF3B30 0%, #FF453A 100%);
+        }
+        .calendar-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: white;
+            border-radius: 16px;
+            padding: 16px 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+        .calendar-nav-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #007AFF;
+            cursor: pointer;
+            padding: 8px 12px;
+            transition: all 0.2s;
+        }
+        .calendar-nav-btn:hover {
+            transform: scale(1.1);
+        }
+        .calendar-nav-btn:active {
+            transform: scale(0.9);
+        }
+        .calendar-month {
+            font-size: 20px;
+            font-weight: bold;
+            color: #1d1d1f;
+        }
+        .calendar-container {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+        .calendar-weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .calendar-weekday {
+            text-align: center;
+            font-size: 14px;
+            font-weight: 600;
+            color: #86868b;
+            padding: 8px 0;
+        }
+        .calendar-days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+        }
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            background: #f5f5f7;
+        }
+        .calendar-day.other-month {
+            color: #d1d1d6;
+        }
+        .calendar-day.today {
+            background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
+            font-weight: bold;
+        }
+        .calendar-day.has-record {
+            background: linear-gradient(135deg, #007AFF 0%, #0051D5 100%);
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
+        }
+        .calendar-day.has-record:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.4);
+        }
+        .calendar-day-number {
+            font-size: 16px;
+        }
+        .calendar-day-badges {
+            display: flex;
+            gap: 2px;
+            margin-top: 2px;
+        }
+        .calendar-day-badge {
+            font-size: 10px;
+        }
+        .record-details {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f5f5f7;
+            border-radius: 16px;
+            display: none;
+        }
+        .record-details.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .record-details-header {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 16px;
+            color: #1d1d1f;
+        }
+        .record-detail-item {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         }
-        .chart-title { font-size: 18px; font-weight: 600; margin-bottom: 20px; }
+        .record-detail-item.asthma {
+            border-left: 4px solid #007AFF;
+        }
+        .record-detail-item.headache {
+            border-left: 4px solid #FF3B30;
+        }
+        .record-detail-time {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1d1d1f;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .record-detail-delete {
+            background: linear-gradient(135deg, #FF3B30 0%, #FF453A 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .record-detail-delete:hover {
+            transform: scale(1.05);
+        }
+        .record-detail-delete:active {
+            transform: scale(0.95);
+        }
+        .empty-state { 
+            text-align: center; 
+            padding: 60px 20px; 
+            color: #86868b;
+        }
+        .empty-icon { 
+            font-size: 60px; 
+            margin-bottom: 20px; 
+        }
+        .stat-cards {
+            display: grid; 
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px; 
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: white; 
+            border-radius: 16px; 
+            padding: 24px;
+            text-align: center; 
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 20px rgba(0, 122, 255, 0.15);
+            border-color: rgba(0, 122, 255, 0.2);
+        }
+        .stat-card.asthma {
+            border-color: rgba(0, 122, 255, 0.2);
+        }
+        .stat-card.headache {
+            border-color: rgba(255, 59, 48, 0.2);
+        }
+        .stat-icon { 
+            font-size: 32px; 
+            margin-bottom: 12px;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+        }
+        .stat-value { 
+            font-size: 32px; 
+            font-weight: bold; 
+            margin-bottom: 6px;
+        }
+        .stat-value.asthma {
+            background: linear-gradient(135deg, #007AFF 0%, #0051D5 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .stat-value.headache {
+            background: linear-gradient(135deg, #FF3B30 0%, #FF453A 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .stat-label { color: #86868b; font-size: 12px; }
+        .chart-container {
+            background: white; 
+            border-radius: 16px; 
+            padding: 24px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            margin-bottom: 20px;
+        }
+        .chart-title { 
+            font-size: 20px; 
+            font-weight: 600; 
+            margin-bottom: 24px;
+            color: #1d1d1f;
+        }
         .chart-bar {
             display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
         }
@@ -116,10 +439,19 @@
             width: 30px; text-align: right; font-weight: 600; font-size: 14px;
         }
         .toast {
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.8); color: white;
-            padding: 16px 24px; border-radius: 12px;
-            font-size: 16px; z-index: 2000; animation: toastIn 0.3s;
+            position: fixed; 
+            top: 50%; 
+            left: 50%; 
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, rgba(0, 122, 255, 0.95) 0%, rgba(0, 81, 213, 0.95) 100%);
+            color: white;
+            padding: 18px 28px; 
+            border-radius: 16px;
+            font-size: 16px; 
+            z-index: 2000; 
+            animation: toastIn 0.3s;
+            box-shadow: 0 8px 24px rgba(0, 122, 255, 0.4);
+            backdrop-filter: blur(10px);
         }
         @keyframes toastIn {
             from { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
@@ -142,20 +474,31 @@
     <div class="container">
         <div id="recordPage" class="page active">
             <div class="record-page">
-                <div class="app-icon">💊</div>
-                <h1 class="app-title">哮喘用药记录</h1>
-                <p class="app-subtitle">一键记录您的用药时间</p>
-                <button id="recordBtn" class="record-button">
-                    <span>➕</span><span>记录用药</span>
-                </button>
+                <div class="app-icon">🏥</div>
+                <h1 class="app-title">症状用药记录</h1>
+                <p class="app-subtitle">记录您的症状和用药时间</p>
+                <div class="symptom-buttons">
+                    <button class="symptom-btn asthma" data-type="asthma">
+                        <span class="symptom-icon">😮‍💨</span>
+                        <span class="symptom-label">呼吸困难</span>
+                    </button>
+                    <button class="symptom-btn headache" data-type="headache">
+                        <span class="symptom-icon">🤕</span>
+                        <span class="symptom-label">神经性头痛</span>
+                    </button>
+                </div>
                 <div class="features">
                     <div class="feature-item">
                         <span class="feature-icon">✅</span>
-                        <span>每天只能记录一次</span>
+                        <span>随时记录，不限次数</span>
                     </div>
                     <div class="feature-item">
                         <span class="feature-icon">📊</span>
-                        <span>自动统计用药次数</span>
+                        <span>分类统计症状次数</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">📅</span>
+                        <span>日历视图直观展示</span>
                     </div>
                     <div class="feature-item">
                         <span class="feature-icon">🔒</span>
@@ -165,36 +508,63 @@
             </div>
         </div>
         <div id="listPage" class="page">
-            <h2 class="list-header">用药记录</h2>
-            <div id="recordList"></div>
+            <h2 class="list-header">症状日历</h2>
+            <div class="filter-tabs">
+                <button class="filter-tab active" data-filter="all">
+                    全部
+                </button>
+                <button class="filter-tab asthma" data-filter="asthma">
+                    😮‍💨 呼吸困难
+                </button>
+                <button class="filter-tab headache" data-filter="headache">
+                    🤕 头痛
+                </button>
+            </div>
+            <div class="calendar-nav">
+                <button class="calendar-nav-btn" id="prevMonth">◀</button>
+                <span class="calendar-month" id="calendarMonth">2026年2月</span>
+                <button class="calendar-nav-btn" id="nextMonth">▶</button>
+            </div>
+            <div class="calendar-container">
+                <div class="calendar-weekdays">
+                    <div class="calendar-weekday">日</div>
+                    <div class="calendar-weekday">一</div>
+                    <div class="calendar-weekday">二</div>
+                    <div class="calendar-weekday">三</div>
+                    <div class="calendar-weekday">四</div>
+                    <div class="calendar-weekday">五</div>
+                    <div class="calendar-weekday">六</div>
+                </div>
+                <div class="calendar-days" id="calendarDays"></div>
+            </div>
+            <div class="record-details" id="recordDetails"></div>
         </div>
         <div id="statsPage" class="page">
-            <h2 class="list-header">用药统计</h2>
+            <h2 class="list-header">症状统计</h2>
             <div class="year-selector">
                 <button class="year-btn" id="prevYear">◀</button>
                 <span class="year-text" id="currentYear">2026年</span>
                 <button class="year-btn" id="nextYear">▶</button>
             </div>
             <div class="stat-cards">
-                <div class="stat-card">
-                    <div class="stat-icon">📅</div>
-                    <div class="stat-value" id="monthCount">0</div>
-                    <div class="stat-label">本月</div>
+                <div class="stat-card asthma">
+                    <div class="stat-icon">😮‍💨</div>
+                    <div class="stat-value asthma" id="asthmaCount">0</div>
+                    <div class="stat-label">呼吸困难</div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-icon">📆</div>
-                    <div class="stat-value" id="yearCount">0</div>
-                    <div class="stat-label">本年</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">📊</div>
-                    <div class="stat-value" id="totalCount">0</div>
-                    <div class="stat-label">总计</div>
+                <div class="stat-card headache">
+                    <div class="stat-icon">🤕</div>
+                    <div class="stat-value headache" id="headacheCount">0</div>
+                    <div class="stat-label">神经性头痛</div>
                 </div>
             </div>
             <div class="chart-container">
-                <div class="chart-title">月度统计</div>
-                <div id="monthlyChart"></div>
+                <div class="chart-title">😮‍💨 呼吸困难 - 月度统计</div>
+                <div id="asthmaChart"></div>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title">🤕 神经性头痛 - 月度统计</div>
+                <div id="headacheChart"></div>
             </div>
         </div>
     </div>
@@ -205,7 +575,7 @@
         </div>
         <div class="tab-item" data-page="listPage">
             <div class="tab-icon">📋</div>
-            <div class="tab-label">列表</div>
+            <div class="tab-label">日历</div>
         </div>
         <div class="tab-item" data-page="statsPage">
             <div class="tab-icon">📊</div>
@@ -213,7 +583,378 @@
         </div>
     </div>
     <script>
-class MedicationLogger{constructor(){this.records=this.loadRecords();this.lastRecordTime=null;this.debounceDelay=2000;this.selectedYear=new Date().getFullYear();this.init()}init(){this.setupTabNavigation();this.setupRecordButton();this.setupYearSelector();this.renderList();this.renderStats()}setupTabNavigation(){const tabItems=document.querySelectorAll('.tab-item');const pages=document.querySelectorAll('.page');tabItems.forEach(item=>{item.addEventListener('click',()=>{const targetPage=item.dataset.page;tabItems.forEach(tab=>tab.classList.remove('active'));item.classList.add('active');pages.forEach(page=>page.classList.remove('active'));document.getElementById(targetPage).classList.add('active');if(targetPage==='listPage'){this.renderList()}else if(targetPage==='statsPage'){this.renderStats()}})})}setupRecordButton(){const btn=document.getElementById('recordBtn');btn.addEventListener('click',()=>this.recordMedication())}setupYearSelector(){const currentYear=new Date().getFullYear();document.getElementById('currentYear').textContent=`${this.selectedYear}年`;document.getElementById('prevYear').addEventListener('click',()=>{this.selectedYear--;document.getElementById('currentYear').textContent=`${this.selectedYear}年`;this.renderStats()});document.getElementById('nextYear').addEventListener('click',()=>{if(this.selectedYear<currentYear){this.selectedYear++;document.getElementById('currentYear').textContent=`${this.selectedYear}年`;this.renderStats()}});if(this.selectedYear>=currentYear){document.getElementById('nextYear').disabled=true}}recordMedication(){const now=new Date();if(this.lastRecordTime&&(now-this.lastRecordTime)<this.debounceDelay){this.showToast('操作太频繁，请稍后再试');return}if(this.hasRecordToday()){this.showToast('今天已经记录过了');return}const record={id:Date.now(),date:now.toISOString(),timestamp:now.getTime()};this.records.push(record);this.saveRecords();this.lastRecordTime=now;this.showToast('记录成功！')}hasRecordToday(){const today=new Date();const todayStr=this.formatDate(today);return this.records.some(record=>{const recordDate=new Date(record.date);return this.formatDate(recordDate)===todayStr})}deleteRecord(id){if(confirm('确定要删除这条记录吗？')){this.records=this.records.filter(r=>r.id!==id);this.saveRecords();this.renderList();this.renderStats();this.showToast('删除成功')}}renderList(){const container=document.getElementById('recordList');if(this.records.length===0){container.innerHTML=`<div class="empty-state"><div class="empty-icon">📋</div><div>暂无记录</div><div style="margin-top:10px;font-size:14px;">点击"记录"标签页开始记录用药</div></div>`;return}const grouped=this.groupByMonth(this.records);let html='';Object.keys(grouped).sort((a,b)=>b.localeCompare(a)).forEach(month=>{const records=grouped[month];html+=`<div class="record-group"><div class="group-header">${month} (${records.length}次)</div>${records.map(record=>this.renderRecordItem(record)).join('')}</div>`});container.innerHTML=html;container.querySelectorAll('.delete-btn').forEach(btn=>{btn.addEventListener('click',(e)=>{const id=parseInt(e.target.dataset.id);this.deleteRecord(id)})})}renderRecordItem(record){const date=new Date(record.date);return`<div class="record-item"><div class="record-icon">💊</div><div class="record-info"><div class="record-date">${this.formatDate(date)}</div><div class="record-time">${this.formatTime(date)}</div></div><button class="delete-btn" data-id="${record.id}">删除</button></div>`}groupByMonth(records){const grouped={};records.forEach(record=>{const date=new Date(record.date);const key=`${date.getFullYear()}年${String(date.getMonth()+1).padStart(2,'0')}月`;if(!grouped[key]){grouped[key]=[]}grouped[key].push(record)});return grouped}renderStats(){document.getElementById('monthCount').textContent=this.getMonthCount();document.getElementById('yearCount').textContent=this.getYearCount(this.selectedYear);document.getElementById('totalCount').textContent=this.records.length;this.renderMonthlyChart()}renderMonthlyChart(){const container=document.getElementById('monthlyChart');const monthlyCounts=this.getMonthlyCountsForYear(this.selectedYear);const maxCount=Math.max(...monthlyCounts,1);let html='';for(let month=1;month<=12;month++){const count=monthlyCounts[month-1];const percentage=(count/maxCount)*100;const color=this.getBarColor(count);html+=`<div class="chart-bar"><div class="bar-label">${month}月</div><div class="bar-track"><div class="bar-fill" style="width:${percentage}%;background:${color};"></div></div><div class="bar-value">${count}</div></div>`}container.innerHTML=html}getBarColor(count){if(count===0)return'#ccc';if(count<=3)return'linear-gradient(90deg,#34C759 0%,#30D158 100%)';if(count<=7)return'linear-gradient(90deg,#FF9500 0%,#FF9F0A 100%)';return'linear-gradient(90deg,#FF3B30 0%,#FF453A 100%)'}getMonthCount(){const now=new Date();const year=now.getFullYear();const month=now.getMonth();return this.records.filter(record=>{const date=new Date(record.date);return date.getFullYear()===year&&date.getMonth()===month}).length}getYearCount(year){return this.records.filter(record=>{const date=new Date(record.date);return date.getFullYear()===year}).length}getMonthlyCountsForYear(year){const counts=new Array(12).fill(0);this.records.forEach(record=>{const date=new Date(record.date);if(date.getFullYear()===year){counts[date.getMonth()]++}});return counts}showToast(message){const toast=document.createElement('div');toast.className='toast';toast.textContent=message;document.body.appendChild(toast);setTimeout(()=>toast.remove(),2000)}formatDate(date){const year=date.getFullYear();const month=String(date.getMonth()+1).padStart(2,'0');const day=String(date.getDate()).padStart(2,'0');return`${year}年${month}月${day}日`}formatTime(date){const hours=String(date.getHours()).padStart(2,'0');const minutes=String(date.getMinutes()).padStart(2,'0');const seconds=String(date.getSeconds()).padStart(2,'0');return`${hours}:${minutes}:${seconds}`}loadRecords(){try{const data=localStorage.getItem('medicationRecords');return data?JSON.parse(data):[]}catch(error){console.error('加载记录失败:',error);return[]}}saveRecords(){try{localStorage.setItem('medicationRecords',JSON.stringify(this.records))}catch(error){console.error('保存记录失败:',error);this.showToast('保存失败，请检查存储空间')}}}document.addEventListener('DOMContentLoaded',()=>{new MedicationLogger()});
+class SymptomLogger {
+    constructor() {
+        this.records = this.loadRecords();
+        this.lastRecordTime = null;
+        this.debounceDelay = 1000;
+        this.selectedYear = new Date().getFullYear();
+        this.calendarDate = new Date();
+        this.currentFilter = 'all';
+        this.symptomConfig = {
+            asthma: { icon: '😮‍💨', name: '呼吸困难', color: '#007AFF' },
+            headache: { icon: '🤕', name: '神经性头痛', color: '#FF3B30' }
+        };
+        this.init();
+    }
+
+    init() {
+        this.setupTabNavigation();
+        this.setupSymptomButtons();
+        this.setupFilterTabs();
+        this.setupYearSelector();
+        this.setupCalendarNavigation();
+        this.renderCalendar();
+        this.renderStats();
+    }
+
+    setupTabNavigation() {
+        const tabItems = document.querySelectorAll('.tab-item');
+        const pages = document.querySelectorAll('.page');
+        tabItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const targetPage = item.dataset.page;
+                tabItems.forEach(tab => tab.classList.remove('active'));
+                item.classList.add('active');
+                pages.forEach(page => page.classList.remove('active'));
+                document.getElementById(targetPage).classList.add('active');
+                if (targetPage === 'listPage') {
+                    this.renderCalendar();
+                } else if (targetPage === 'statsPage') {
+                    this.renderStats();
+                }
+            });
+        });
+    }
+
+    setupSymptomButtons() {
+        const buttons = document.querySelectorAll('.symptom-btn');
+        buttons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const type = btn.dataset.type;
+                this.recordSymptom(type);
+            });
+        });
+    }
+
+    setupFilterTabs() {
+        const tabs = document.querySelectorAll('.filter-tab');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                this.currentFilter = tab.dataset.filter;
+                this.renderCalendar();
+            });
+        });
+    }
+
+    setupCalendarNavigation() {
+        document.getElementById('prevMonth').addEventListener('click', () => {
+            this.calendarDate.setMonth(this.calendarDate.getMonth() - 1);
+            this.renderCalendar();
+        });
+        document.getElementById('nextMonth').addEventListener('click', () => {
+            this.calendarDate.setMonth(this.calendarDate.getMonth() + 1);
+            this.renderCalendar();
+        });
+    }
+
+    setupYearSelector() {
+        const currentYear = new Date().getFullYear();
+        document.getElementById('currentYear').textContent = `${this.selectedYear}年`;
+        document.getElementById('prevYear').addEventListener('click', () => {
+            this.selectedYear--;
+            document.getElementById('currentYear').textContent = `${this.selectedYear}年`;
+            this.renderStats();
+        });
+        document.getElementById('nextYear').addEventListener('click', () => {
+            if (this.selectedYear < currentYear) {
+                this.selectedYear++;
+                document.getElementById('currentYear').textContent = `${this.selectedYear}年`;
+                this.renderStats();
+            }
+        });
+        if (this.selectedYear >= currentYear) {
+            document.getElementById('nextYear').disabled = true;
+        }
+    }
+
+    switchToTab(tabName) {
+        const tabItems = document.querySelectorAll('.tab-item');
+        const pages = document.querySelectorAll('.page');
+        tabItems.forEach(tab => {
+            if (tab.dataset.page === tabName) {
+                tab.classList.add('active');
+            } else {
+                tab.classList.remove('active');
+            }
+        });
+        pages.forEach(page => {
+            if (page.id === tabName) {
+                page.classList.add('active');
+            } else {
+                page.classList.remove('active');
+            }
+        });
+        if (tabName === 'listPage') {
+            this.renderCalendar();
+        } else if (tabName === 'statsPage') {
+            this.renderStats();
+        }
+    }
+
+    async recordSymptom(type) {
+        const now = new Date();
+        if (this.lastRecordTime && (now - this.lastRecordTime) < this.debounceDelay) {
+            this.showToast('操作太频繁，请稍后再试');
+            return;
+        }
+
+        const record = {
+            id: Date.now(),
+            type: type,
+            date: now.toISOString(),
+            timestamp: now.getTime()
+        };
+
+        this.records.push(record);
+        this.saveRecords();
+        this.lastRecordTime = now;
+
+        const config = this.symptomConfig[type];
+        this.showToast(`${config.icon} ${config.name} 记录成功！`);
+
+        setTimeout(() => {
+            this.switchToTab('listPage');
+        }, 800);
+    }
+
+    deleteRecord(id) {
+        if (confirm('确定要删除这条记录吗？')) {
+            this.records = this.records.filter(r => r.id !== id);
+            this.saveRecords();
+            this.renderCalendar();
+            this.renderStats();
+            this.showToast('删除成功');
+        }
+    }
+
+    renderCalendar() {
+        const year = this.calendarDate.getFullYear();
+        const month = this.calendarDate.getMonth();
+        document.getElementById('calendarMonth').textContent = `${year}年${month + 1}月`;
+
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0);
+        const prevLastDay = new Date(year, month, 0);
+        const firstDayWeek = firstDay.getDay();
+        const daysInMonth = lastDay.getDate();
+        const daysInPrevMonth = prevLastDay.getDate();
+
+        const container = document.getElementById('calendarDays');
+        let html = '';
+
+        // Previous month days
+        for (let i = firstDayWeek - 1; i >= 0; i--) {
+            const day = daysInPrevMonth - i;
+            html += `<div class="calendar-day other-month"><div class="calendar-day-number">${day}</div></div>`;
+        }
+
+        // Current month days
+        const
+today = new Date();
+        const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+        for (let day = 1; day <= daysInMonth; day++) {
+            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            const dayRecords = this.getRecordsByDate(dateStr);
+            const isToday = dateStr === todayStr;
+            const classes = ['calendar-day'];
+            
+            if (isToday) classes.push('today');
+            if (dayRecords.length > 0) classes.push('has-record');
+
+            let badges = '';
+            if (dayRecords.length > 0) {
+                const asthmaCount = dayRecords.filter(r => r.type === 'asthma').length;
+                const headacheCount = dayRecords.filter(r => r.type === 'headache').length;
+                badges = '<div class="calendar-day-badges">';
+                if (asthmaCount > 0) badges += `<span class="calendar-day-badge">😮‍💨${asthmaCount}</span>`;
+                if (headacheCount > 0) badges += `<span class="calendar-day-badge">🤕${headacheCount}</span>`;
+                badges += '</div>';
+            }
+
+            html += `<div class="${classes.join(' ')}" data-date="${dateStr}">
+                <div class="calendar-day-number">${day}</div>
+                ${badges}
+            </div>`;
+        }
+
+        // Next month days
+        const remainingDays = 42 - (firstDayWeek + daysInMonth);
+        for (let day = 1; day <= remainingDays; day++) {
+            html += `<div class="calendar-day other-month"><div class="calendar-day-number">${day}</div></div>`;
+        }
+
+        container.innerHTML = html;
+        container.querySelectorAll('.calendar-day:not(.other-month)').forEach(dayEl => {
+            dayEl.addEventListener('click', () => {
+                const date = dayEl.dataset.date;
+                this.showDayDetails(date);
+            });
+        });
+    }
+
+    getRecordsByDate(dateStr) {
+        let records = this.records.filter(record => {
+            const recordDate = new Date(record.date);
+            const recordDateStr = `${recordDate.getFullYear()}-${String(recordDate.getMonth() + 1).padStart(2, '0')}-${String(recordDate.getDate()).padStart(2, '0')}`;
+            return recordDateStr === dateStr;
+        });
+
+        if (this.currentFilter !== 'all') {
+            records = records.filter(r => r.type === this.currentFilter);
+        }
+
+        return records;
+    }
+
+    showDayDetails(dateStr) {
+        const dayRecords = this.getRecordsByDate(dateStr);
+        const detailsContainer = document.getElementById('recordDetails');
+
+        if (dayRecords.length === 0) {
+            detailsContainer.classList.remove('show');
+            return;
+        }
+
+        const date = new Date(dateStr);
+        const dateDisplay = this.formatDate(date);
+        let html = `<div class="record-details-header">${dateDisplay} - ${dayRecords.length}次记录</div>`;
+
+        dayRecords.sort((a, b) => b.timestamp - a.timestamp).forEach(record => {
+            const time = this.formatTime(new Date(record.date));
+            const config = this.symptomConfig[record.type];
+            html += `<div class="record-detail-item ${record.type}">
+                <div class="record-detail-time">${config.icon} ${config.name} ${time}</div>
+                <button class="record-detail-delete" data-id="${record.id}">删除</button>
+            </div>`;
+        });
+
+        detailsContainer.innerHTML = html;
+        detailsContainer.classList.add('show');
+
+        detailsContainer.querySelectorAll('.record-detail-delete').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const id = parseInt(btn.dataset.id);
+                this.deleteRecord(id);
+            });
+        });
+    }
+
+    renderStats() {
+        const asthmaRecords = this.records.filter(r => r.type === 'asthma');
+        const headacheRecords = this.records.filter(r => r.type === 'headache');
+
+        document.getElementById('asthmaCount').textContent = asthmaRecords.length;
+        document.getElementById('headacheCount').textContent = headacheRecords.length;
+
+        this.renderChart('asthmaChart', 'asthma');
+        this.renderChart('headacheChart', 'headache');
+    }
+
+    renderChart(containerId, type) {
+        const container = document.getElementById(containerId);
+        const monthlyCounts = this.getMonthlyCountsForYear(this.selectedYear, type);
+        const maxCount = Math.max(...monthlyCounts, 1);
+
+        let html = '';
+        for (let month = 1; month <= 12; month++) {
+            const count = monthlyCounts[month - 1];
+            const percentage = (count / maxCount) * 100;
+            const color = this.getBarColor(count, type);
+            html += `<div class="chart-bar">
+                <div class="bar-label">${month}月</div>
+                <div class="bar-track">
+                    <div class="bar-fill" style="width:${percentage}%;background:${color};"></div>
+                </div>
+                <div class="bar-value">${count}</div>
+            </div>`;
+        }
+        container.innerHTML = html;
+    }
+
+    getBarColor(count, type) {
+        if (count === 0) return '#ccc';
+        const config = this.symptomConfig[type];
+        if (count <= 5) return `linear-gradient(90deg, ${config.color} 0%, ${config.color}dd 100%)`;
+        if (count <= 15) return `linear-gradient(90deg, #FF9500 0%, #FF9F0A 100%)`;
+        return `linear-gradient(90deg, #FF3B30 0%, #FF453A 100%)`;
+    }
+
+    getMonthlyCountsForYear(year, type) {
+        const counts = new Array(12).fill(0);
+        this.records.filter(r => r.type === type).forEach(record => {
+            const date = new Date(record.date);
+            if (date.getFullYear() === year) {
+                counts[date.getMonth()]++;
+            }
+        });
+        return counts;
+    }
+
+    showToast(message) {
+        const existingToast = document.querySelector('.toast');
+        if (existingToast) {
+            existingToast.remove();
+        }
+
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.textContent = message;
+        document.body.appendChild(toast);
+
+        setTimeout(() => toast.remove(), 2000);
+    }
+
+    formatDate(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}年${month}月${day}日`;
+    }
+
+    formatTime(date) {
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+        return `${hours}:${minutes}:${seconds}`;
+    }
+
+    loadRecords() {
+        try {
+            const data = localStorage.getItem('symptomRecords');
+            return data ? JSON.parse(data) : [];
+        } catch (error) {
+            console.error('加载记录失败:', error);
+            return [];
+        }
+    }
+
+    saveRecords() {
+        try {
+            localStorage.setItem('symptomRecords', JSON.stringify(this.records));
+        } catch (error) {
+            console.error('保存记录失败:', error);
+            this.showToast('保存失败，请检查存储空间');
+        }
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    new SymptomLogger();
+});
     </script>
 </body>
 </html>
